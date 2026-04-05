@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { MouseEvent } from 'react';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 type Location = { x: number; y: number };
 
