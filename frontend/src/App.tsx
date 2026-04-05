@@ -51,9 +51,11 @@ function App() {
     fetchState();
   };
 
-  const handleClear = async () => {
-    await axios.post(`${API_URL}/simulation/clear`);
-    fetchState();
+  const handleClearAll = async () => {
+    if (window.confirm("Are you sure you want to clear the entire map?")) {
+      await axios.post(`${API_URL}/simulation/reset`);
+      fetchState();
+    }
   };
 
   const handleMapClick = async (e: MouseEvent<HTMLDivElement>) => {
@@ -121,10 +123,10 @@ function App() {
             {showCentroids ? 'Hide Centroid Rings' : 'Show Centroid Rings'}
           </button>
           <button 
-            onClick={handleClear}
-            className="px-4 py-2 bg-red-900/40 hover:bg-red-800/60 text-red-300 rounded-lg font-medium transition-colors border border-red-800/50"
+            onClick={handleClearAll}
+            className="px-4 py-2 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white rounded-lg font-medium transition-colors border border-red-500/50"
           >
-            Clear Map
+            Clear All
           </button>
           <button 
             onClick={handleSeed}

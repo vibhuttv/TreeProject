@@ -233,3 +233,12 @@ class DispatchService:
                             break
             del self.orders[order_id]
             self._process_dispatch()
+
+    def reset_simulation(self):
+        """Wipes all state and reinstantiates the data structures."""
+        self.orders.clear()
+        self.partners.clear()
+        self.batches.clear()
+        self.priority_queue = PriorityQueue()
+        self.partner_tree = KDTree()
+        self.partner_treap = Treap()

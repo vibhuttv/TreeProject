@@ -81,10 +81,10 @@ def seed_simulation():
         ))
     return {"message": "Seeded partners"}
 
-@app.post("/simulation/clear")
-def clear_simulation():
-    dispatch_service.clear()
-    return {"message": "Simulation cleared"}
+@app.post("/simulation/reset")
+def reset_simulation():
+    dispatch_service.reset_simulation()
+    return {"message": "Simulation wiped entirely"}
 
 if __name__ == "__main__":
     import uvicorn
