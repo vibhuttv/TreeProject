@@ -3,7 +3,7 @@ import type { MouseEvent } from 'react';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-const MAX_CAP = 3; // Mirrors backend MAX_BATCH_CAPACITY in models/schemas.py
+const MAX_CAP = 4; // Mirrors backend MAX_BATCH_CAPACITY in models/schemas.py
 
 type Location = { x: number; y: number };
 
@@ -63,7 +63,7 @@ function App() {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
-    
+
     if (clickMode === 'PARTNER') {
       await axios.post(`${API_URL}/partners`, { x, y });
     } else {
@@ -97,19 +97,19 @@ function App() {
           Smart Food Delivery Simulation
         </h1>
         <div className="flex gap-3 bg-slate-900 p-1 rounded-lg border border-slate-700">
-          <button 
+          <button
             onClick={() => setClickMode('PARTNER')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${clickMode === 'PARTNER' ? 'bg-teal-600 shadow-lg shadow-teal-500/20' : 'hover:bg-slate-800'}`}
           >
             + Partner
           </button>
-          <button 
+          <button
             onClick={() => setClickMode('ORDER_NORMAL')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${clickMode === 'ORDER_NORMAL' ? 'bg-blue-600 shadow-lg shadow-blue-500/20' : 'hover:bg-slate-800'}`}
           >
             + Normal Order
           </button>
-          <button 
+          <button
             onClick={() => setClickMode('ORDER_PRIORITY')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${clickMode === 'ORDER_PRIORITY' ? 'bg-orange-600 shadow-lg shadow-orange-500/20' : 'hover:bg-slate-800'}`}
           >
@@ -117,19 +117,19 @@ function App() {
           </button>
         </div>
         <div className="flex ml-auto gap-3">
-          <button 
+          <button
             onClick={() => setShowCentroids(!showCentroids)}
             className={`px-4 py-2 rounded-lg font-medium transition-colors border ${showCentroids ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400' : 'bg-slate-700 hover:bg-slate-600 border-slate-600 text-slate-300'}`}
           >
             {showCentroids ? 'Hide Centroid Rings' : 'Show Centroid Rings'}
           </button>
-          <button 
+          <button
             onClick={handleClearAll}
             className="px-4 py-2 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white rounded-lg font-medium transition-colors border border-red-500/50"
           >
             Clear All
           </button>
-          <button 
+          <button
             onClick={handleSeed}
             className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg font-medium transition-colors border border-slate-600 text-slate-200"
           >
@@ -139,7 +139,7 @@ function App() {
       </header>
 
       <div className="flex flex-1 gap-6 min-h-0">
-        <div 
+        <div
           onClick={handleMapClick}
           className="w-2/3 bg-slate-800 rounded-xl border border-slate-700 shadow-xl relative overflow-hidden map-grid cursor-crosshair"
         >
@@ -208,7 +208,7 @@ function App() {
           </svg>
           {/* Map Components */}
           {partners.map(p => (
-            <div 
+            <div
               key={p.id}
               className={`absolute w-6 h-6 -ml-3 -mt-3 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500 shadow-lg cursor-pointer hover:scale-110 ${p.status === 'AVAILABLE' ? 'bg-teal-500 shadow-teal-500/50 text-white' : p.current_capacity === MAX_CAP ? 'bg-purple-600 shadow-purple-600/50 text-white ring-2 ring-purple-400' : 'bg-yellow-500 shadow-yellow-500/50 text-slate-900'}`}
               style={{ left: `${p.location.x}%`, top: `${p.location.y}%` }}
@@ -220,7 +220,7 @@ function App() {
             </div>
           ))}
           {orders.map(o => o.status !== 'DELIVERED' && (
-            <div 
+            <div
               key={o.id}
               className={`absolute w-4 h-4 -ml-2 -mt-2 rounded-sm transition-all duration-500 animate-pulse ${o.priority >= 9 ? 'bg-orange-500' : 'bg-blue-500'}`}
               style={{ left: `${o.location.x}%`, top: `${o.location.y}%` }}
@@ -247,7 +247,7 @@ function App() {
                       {p.current_capacity === MAX_CAP ? 'FULL' : p.status}
                     </span>
                     {p.status === 'BUSY' && (
-                      <button 
+                      <button
                         onClick={(e) => { e.stopPropagation(); handleComplete(p.id); }}
                         className="text-xs bg-slate-600 hover:bg-slate-500 px-2 py-1 rounded"
                       >
