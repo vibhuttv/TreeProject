@@ -1,7 +1,7 @@
 import math
 import uuid
 from typing import Dict, List, Optional
-from models.schemas import Order, Partner, OrderStatus, PartnerStatus, Batch
+from models.schemas import Order, Partner, OrderStatus, PartnerStatus, Batch, MAX_BATCH_CAPACITY
 from data_structures.kd_tree import KDTree
 from data_structures.priority_queue import PriorityQueue
 from data_structures.treap import Treap
@@ -64,7 +64,7 @@ class DispatchService:
                     for pending_order in all_pending:
                         dist = math.hypot(pending_order.location.x - order.location.x, 
                                           pending_order.location.y - order.location.y)
-                        if dist <= 20.0 and len(batched_orders) < 3 and pending_order.status == OrderStatus.PENDING:
+                        if dist <= 20.0 and len(batched_orders) < MAX_BATCH_CAPACITY and pending_order.status == OrderStatus.PENDING:
                             batched_orders.append(pending_order)
                         else:
                             new_pq.push(pending_order.priority, pending_order)
@@ -124,7 +124,7 @@ class DispatchService:
                                 break
                                 
                         if target_batch:
-                            if best_dist <= 20.0 and best_partner.current_capacity < 3:
+                            if best_dist <= 20.0 and best_partner.current_capacity < MAX_BATCH_CAPACITY:
                                 self.priority_queue.pop()
                                 order.status = OrderStatus.ASSIGNED
                                 order.assigned_partner_id = best_partner.id
@@ -133,7 +133,7 @@ class DispatchService:
                                 reassigned = True
                                 made_progress = True
                             elif order.priority >= 9:
-                                if best_partner.current_capacity < 3:
+                                if best_partner.current_capacity < MAX_BATCH_CAPACITY:
                                     self.priority_queue.pop()
                                     order.status = OrderStatus.ASSIGNED
                                     order.assigned_partner_id = best_partner.id

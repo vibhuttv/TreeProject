@@ -2,6 +2,9 @@ from pydantic import BaseModel
 from typing import List, Optional
 from enum import Enum
 
+# Global system configuration
+MAX_BATCH_CAPACITY = 4  # Maximum number of orders a single delivery partner can carry
+
 class OrderStatus(str, Enum):
     PENDING = "PENDING"
     ASSIGNED = "ASSIGNED"
@@ -26,7 +29,7 @@ class Partner(BaseModel):
     id: str
     location: Location
     status: PartnerStatus = PartnerStatus.AVAILABLE
-    current_capacity: int = 0  # Max capacity 3?
+    current_capacity: int = 0  # Tracks against MAX_BATCH_CAPACITY
 
 class Batch(BaseModel):
     id: str

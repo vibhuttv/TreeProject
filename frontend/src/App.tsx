@@ -3,6 +3,7 @@ import type { MouseEvent } from 'react';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const MAX_CAP = 3; // Mirrors backend MAX_BATCH_CAPACITY in models/schemas.py
 
 type Location = { x: number; y: number };
 
@@ -164,38 +165,52 @@ function App() {
                 />
               );
             })}
+
+            {/* Centroid Batch Catchment Circles — exact 20-unit radius matching backend threshold */}
+            {showCentroids && partners.map(p => {
+              if (p.status !== 'BUSY' || p.current_capacity >= MAX_CAP) return null;
+
+              // Build all batch nodes: partner + assigned orders
+              const batchNodes = [{ x: p.location.x, y: p.location.y }];
+              orders.filter(o => o.status === 'ASSIGNED' && o.assigned_partner_id === p.id)
+                    .forEach(o => batchNodes.push({ x: o.location.x, y: o.location.y }));
+
+              // Euclidean centroid — mirrors backend: centroid_x = total_x / nodes_count
+              const centroidX = batchNodes.reduce((s, n) => s + n.x, 0) / batchNodes.length;
+              const centroidY = batchNodes.reduce((s, n) => s + n.y, 0) / batchNodes.length;
+
+              // Backend checks: dist_to_centroid <= 20.0
+              // Map is 100x100 units, SVG uses %, so 20 units = 20%
+              const CATCH_RADIUS = 20;
+
+              return (
+                <g key={`catch-centroid-${p.id}`}>
+                  {/* Exact batchable zone: any order placed inside this circle will latch */}
+                  <circle
+                    cx={`${centroidX}%`}
+                    cy={`${centroidY}%`}
+                    r={`${CATCH_RADIUS}%`}
+                    fill="rgba(234,179,8,0.05)"
+                    stroke="rgba(234,179,8,0.35)"
+                    strokeWidth="1.5"
+                    strokeDasharray="5,4"
+                  />
+                  {/* Centroid marker dot */}
+                  <circle
+                    cx={`${centroidX}%`}
+                    cy={`${centroidY}%`}
+                    r="0.6%"
+                    fill="rgba(234,179,8,0.6)"
+                  />
+                </g>
+              );
+            })}
           </svg>
-          {/* Centroid Batch Catchment Areas representing distance <= 20.0 */}
-          {showCentroids && partners.map(p => {
-             if (p.status !== 'BUSY' || p.current_capacity >= 3) return null;
-             
-             let totalX = p.location.x;
-             let totalY = p.location.y;
-             let nodesCount = 1;
-             
-             const partnerOrders = orders.filter(o => o.status === 'ASSIGNED' && o.assigned_partner_id === p.id);
-             partnerOrders.forEach(o => {
-               totalX += o.location.x;
-               totalY += o.location.y;
-               nodesCount += 1;
-             });
-             
-             const centroidX = totalX / nodesCount;
-             const centroidY = totalY / nodesCount;
-             
-             return (
-              <div 
-                key={`catch-centroid-${p.id}`}
-                className="absolute rounded-full border border-yellow-500/30 bg-yellow-400/10 pointer-events-none transition-all duration-500 shadow-xl shadow-yellow-500/5"
-                style={{ left: `${centroidX}%`, top: `${centroidY}%`, width: '40%', height: '40%', transform: 'translate(-50%, -50%)' }}
-              />
-             );
-          })}
           {/* Map Components */}
           {partners.map(p => (
             <div 
               key={p.id}
-              className={`absolute w-6 h-6 -ml-3 -mt-3 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500 shadow-lg cursor-pointer hover:scale-110 ${p.status === 'AVAILABLE' ? 'bg-teal-500 shadow-teal-500/50 text-white' : p.current_capacity === 3 ? 'bg-purple-600 shadow-purple-600/50 text-white ring-2 ring-purple-400' : 'bg-yellow-500 shadow-yellow-500/50 text-slate-900'}`}
+              className={`absolute w-6 h-6 -ml-3 -mt-3 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500 shadow-lg cursor-pointer hover:scale-110 ${p.status === 'AVAILABLE' ? 'bg-teal-500 shadow-teal-500/50 text-white' : p.current_capacity === MAX_CAP ? 'bg-purple-600 shadow-purple-600/50 text-white ring-2 ring-purple-400' : 'bg-yellow-500 shadow-yellow-500/50 text-slate-900'}`}
               style={{ left: `${p.location.x}%`, top: `${p.location.y}%` }}
               title={`Partner ${p.id} | Cap: ${p.current_capacity}. Click = Complete. Right-Click = Delete`}
               onClick={(e) => { e.stopPropagation(); if (p.status === 'BUSY') handleComplete(p.id); }}
@@ -225,11 +240,11 @@ function App() {
                 <div key={p.id} className="flex justify-between items-center p-3 rounded-lg bg-slate-750 border border-slate-700 hover:bg-slate-700 transition">
                   <div>
                     <div className="font-mono text-sm">{p.id}</div>
-                    <div className="text-xs text-slate-400">Cap: {p.current_capacity}/3</div>
+                    <div className="text-xs text-slate-400">Cap: {p.current_capacity}/{MAX_CAP}</div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className={`text-xs px-2 py-1 rounded-full font-bold ${p.status === 'AVAILABLE' ? 'bg-teal-500/20 text-teal-400' : p.current_capacity === 3 ? 'bg-purple-500/20 text-purple-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                      {p.current_capacity === 3 ? 'FULL' : p.status}
+                    <span className={`text-xs px-2 py-1 rounded-full font-bold ${p.status === 'AVAILABLE' ? 'bg-teal-500/20 text-teal-400' : p.current_capacity === MAX_CAP ? 'bg-purple-500/20 text-purple-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                      {p.current_capacity === MAX_CAP ? 'FULL' : p.status}
                     </span>
                     {p.status === 'BUSY' && (
                       <button 

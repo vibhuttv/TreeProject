@@ -4,7 +4,7 @@ from pydantic import BaseModel
 import uuid
 import random
 
-from models.schemas import Order, Partner, Location, OrderStatus, PartnerStatus
+from models.schemas import Order, Partner, Location, OrderStatus, PartnerStatus, MAX_BATCH_CAPACITY
 from services.dispatch_service import DispatchService
 
 app = FastAPI(title="Smart Food Delivery API")
@@ -27,6 +27,10 @@ class PlaceOrderRequest(BaseModel):
 class AddPartnerRequest(BaseModel):
     x: float
     y: float
+
+@app.get("/config")
+def get_config():
+    return {"max_batch_capacity": MAX_BATCH_CAPACITY}
 
 @app.post("/partners")
 def add_partner(req: AddPartnerRequest):
