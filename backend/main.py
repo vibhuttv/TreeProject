@@ -81,6 +81,11 @@ def seed_simulation():
         ))
     return {"message": "Seeded partners"}
 
+@app.post("/simulation/clear")
+def clear_simulation():
+    dispatch_service.clear()
+    return {"message": "Simulation cleared"}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=3000, reload=True)

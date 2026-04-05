@@ -51,6 +51,11 @@ function App() {
     fetchState();
   };
 
+  const handleClear = async () => {
+    await axios.post(`${API_URL}/simulation/clear`);
+    fetchState();
+  };
+
   const handleMapClick = async (e: MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -114,6 +119,12 @@ function App() {
             className={`px-4 py-2 rounded-lg font-medium transition-colors border ${showCentroids ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400' : 'bg-slate-700 hover:bg-slate-600 border-slate-600 text-slate-300'}`}
           >
             {showCentroids ? 'Hide Centroid Rings' : 'Show Centroid Rings'}
+          </button>
+          <button 
+            onClick={handleClear}
+            className="px-4 py-2 bg-red-900/40 hover:bg-red-800/60 text-red-300 rounded-lg font-medium transition-colors border border-red-800/50"
+          >
+            Clear Map
           </button>
           <button 
             onClick={handleSeed}
